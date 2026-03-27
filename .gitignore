@@ -1,0 +1,4 @@
+# StackCubeFixed: do not track results or data artifacts; keep preprocess.py
+StackCubeFixed/results/
+StackCubeFixed/data/*
+!StackCubeFixed/data/preprocess.py
