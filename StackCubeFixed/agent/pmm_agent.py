@@ -74,9 +74,9 @@ class PMMResidualAgent(nn.Module):
         if len(trans_probs) == 1:
             return next(iter(trans_probs))
         rep_embeddings = self.pmm.pmm.get('rep_embeddings', [])
-        if rep_embeddings and z_t is not None:
+        best_q, best_sim = None, -2.0
+        if z_t is not None and rep_embeddings:
             z_norm = z_t / (np.linalg.norm(z_t) + 1e-12)
-            best_q, best_sim = max(trans_probs, key=trans_probs.get), -2.0
             for q_cand in trans_probs:
                 if q_cand < len(rep_embeddings):
                     z_rep = rep_embeddings[q_cand]
@@ -84,8 +84,9 @@ class PMMResidualAgent(nn.Module):
                     if sim > best_sim:
                         best_sim = sim
                         best_q = q_cand
-            return best_q
-        return max(trans_probs, key=trans_probs.get)
+        if best_q is None:
+            raise RuntimeError("PMM multi-edge disambiguation failed")
+        return best_q
 
     def get_pmm_action(self, obs, env_indices=None, external_q=None, delta_pos=None):
         """Forward pass: features → PMM action list → Residual → RNN step → node transition."""
@@ -245,7 +246,7 @@ class ResidualMLP(nn.Module):
         """
         delta = concat_feat - cluster_center
         prototype, aabb_min, aabb_max = self._select_prototype(action_list, delta)
-        raw_action = self.net(torch.cat([delta, prototype], dim=-1)) # + prototype
+        raw_action = self.net(torch.cat([delta, prototype], dim=-1)) + prototype
         return torch.clamp(raw_action, aabb_min - 1e-5, aabb_max + 1e-5)
 
     def get_action_mean(self, action_list, cluster_center, concat_feat):

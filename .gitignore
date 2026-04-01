@@ -2,3 +2,13 @@
 StackCubeFixed/results/
 StackCubeFixed/data/*
 !StackCubeFixed/data/preprocess.py
+
+# StackCubeFixed_Dual: same ignore rules
+StackCubeFixed_Dual/results/
+StackCubeFixed_Dual/data/*
+!StackCubeFixed_Dual/data/preprocess.py
+
+# StackCubeFixed_VLM: same ignore rules
+StackCubeFixed_VLM/results/
+StackCubeFixed_VLM/data/*
+!StackCubeFixed_VLM/data/preprocess.py

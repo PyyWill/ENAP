@@ -587,9 +587,9 @@ class PMM:
                     q_next = next(iter(dist))
                 else:
                     z_t = self._get_step_embedding(epi, t)
+                    best_q, best_sim = None, -2.0
                     if z_t is not None and rep_embeddings:
                         z_t_norm = z_t / (np.linalg.norm(z_t) + 1e-12)
-                        best_q, best_sim = q, -2.0
                         for q_cand in dist:
                             if q_cand < len(rep_embeddings):
                                 sim = np.dot(z_t_norm,
@@ -597,9 +597,9 @@ class PMM:
                                 if sim > best_sim:
                                     best_sim = sim
                                     best_q = q_cand
-                        q_next = best_q
-                    else:
-                        q_next = max(dist, key=dist.get)
+                    if best_q is None:
+                        raise RuntimeError("PMM multi-edge disambiguation failed")
+                    q_next = best_q
 
                 edge_samples[(q, x, q_next)].append((epi, t))
                 step_to_edge[(epi, t)] = (q, x, q_next)

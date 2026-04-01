@@ -19,7 +19,6 @@ import tyro
 import mani_skill.envs
 from mani_skill.utils.structs.pose import Pose
 from mani_skill.utils.wrappers.flatten import FlattenActionSpaceWrapper, FlattenRGBDObservationWrapper
-from mani_skill.utils.wrappers.record import RecordEpisode
 from mani_skill.vector.wrappers.gymnasium import ManiSkillVectorEnv
 
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -94,15 +93,13 @@ class EvalArgs:
     residual_weights: str = "results/checkpoints/residual_net.pt"
     rnn_weights: str = "results/checkpoints/rnn_pretrained.pt"
     traj_pkl: str = "data/episodes_with_states.pkl"
-    # pmm_pkl: str = "results/pmm_residual_training.pkl"
-    pmm_pkl: str = "results/product/product_pmm_not_c6.pkl"
+    pmm_pkl: str = "results/pmm_residual_training.pkl"
+    # pmm_pkl: str = "results/product/product_pmm_not_c6.pkl"
     encoder_weights: str = "/sata1/data/yiyuan/project_backup/Project_ENAP/4_stack_cube_maniskill/runs/StackCube-v1__ppo/ckpt_531.pt"
     seed: int = 42
     max_steps: int = 80
     device: str = "cuda" if torch.cuda.is_available() else "cpu"
     control_mode: str = "pd_joint_delta_pos"
-    save_video_n: int = 5
-    """Number of episodes to record as video (0 = no video). Saved to results/eval_videos/."""
 
 
 def main():
@@ -159,20 +156,6 @@ def main():
     env = FlattenRGBDObservationWrapper(env, rgb=True, depth=False, state=True)
     if isinstance(env.action_space, gym.spaces.Dict):
         env = FlattenActionSpaceWrapper(env)
-
-    _episode_counter = [0]
-    if args.save_video_n > 0:
-        video_dir = os.path.join("results", "eval_videos")
-        os.makedirs(video_dir, exist_ok=True)
-        env = RecordEpisode(
-            env,
-            output_dir=video_dir,
-            save_trajectory=False,
-            save_video_trigger=lambda _step: _episode_counter[0] < args.save_video_n,
-            max_steps_per_video=args.max_steps,
-            video_fps=30,
-        )
-        print(f"Video recording enabled for first {args.save_video_n} episodes -> {video_dir}")
 
     env = ManiSkillVectorEnv(env, 1, ignore_terminations=False, record_metrics=True)
 
@@ -259,7 +242,6 @@ def main():
                         elif prev_cubeB_z > prev_cubeA_z:
                             stacking_direction = "green_on_red"
 
-        _episode_counter[0] = ep + 1
         total_rewards.append(ep_reward)
         if episode_success:
             success_count += 1

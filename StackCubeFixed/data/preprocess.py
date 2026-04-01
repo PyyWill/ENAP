@@ -269,9 +269,10 @@ if __name__ == "__main__":
     pos_features_norm = (pos_features - pos_features.mean(axis=0)) / (pos_features.std(axis=0) + 1e-8)
 
     combined_features = np.concatenate([rgb_features_norm, pos_features_norm], axis=1)
-    rgb_pca = PCA(n_components=5, random_state=0).fit_transform(rgb_features_norm)
-    pos_pca = PCA(n_components=5, random_state=0).fit_transform(pos_features_norm)
-    features_pca = np.concatenate([rgb_pca, pos_pca], axis=1)
+    rgb_pca = PCA(n_components=10, random_state=0).fit_transform(rgb_features_norm)
+    pos_pca = PCA(n_components=10, random_state=0).fit_transform(pos_features_norm)
+    # features_pca = np.concatenate([rgb_pca, pos_pca], axis=1)
+    features_pca = rgb_pca
     labels, Z = hdbscan_cluster(features_pca)
 
     np.save(os.path.join(CLUSTERING_DIR, "maniskill_cluster_labels.npy"), labels)

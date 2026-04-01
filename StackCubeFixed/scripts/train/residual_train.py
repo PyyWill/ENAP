@@ -42,18 +42,18 @@ def update_pmm_node(pmm, current_q, x, z_t):
         return next(iter(dist))
 
     rep_embeddings = pmm.pmm.get('rep_embeddings', [])
-    if not rep_embeddings or z_t is None:
-        return max(dist, key=dist.get)
-
-    z_norm = z_t / (np.linalg.norm(z_t) + 1e-12)
-    best_q, best_sim = current_q, -2.0
-    for q_cand in dist:
-        if q_cand < len(rep_embeddings):
-            z_rep = rep_embeddings[q_cand]
-            sim = np.dot(z_norm, z_rep / (np.linalg.norm(z_rep) + 1e-12))
-            if sim > best_sim:
-                best_sim = sim
-                best_q = q_cand
+    best_q, best_sim = None, -2.0
+    if z_t is not None and rep_embeddings:
+        z_norm = z_t / (np.linalg.norm(z_t) + 1e-12)
+        for q_cand in dist:
+            if q_cand < len(rep_embeddings):
+                z_rep = rep_embeddings[q_cand]
+                sim = np.dot(z_norm, z_rep / (np.linalg.norm(z_rep) + 1e-12))
+                if sim > best_sim:
+                    best_sim = sim
+                    best_q = q_cand
+    if best_q is None:
+        raise RuntimeError("PMM multi-edge disambiguation failed")
     return best_q
 
 
